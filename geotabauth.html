@@ -1,0 +1,162 @@
+<html>
+  <head>
+    <title>TripVision Single Sign-On</title>
+    <style>
+      .output-container {
+        text-align: left;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        background-color: #f5f5f5;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 16px; /* Adjusted text size */
+      }
+    </style>
+    <script>
+      geotab.addin.myCustomPage1 = () => {
+        return {
+          initialize(api, state, callback) {
+            const myButton = document.getElementById('n-myBtn');
+            myButton.addEventListener('click', SSOWrapper);
+
+            function SSOWrapper() {
+              /* 
+                Handles redirects to tripvision. If we arent careful with how we do this the entire geotab
+                page will redirect to tripvision instead of just the add-in.
+              */
+              try {
+                SSOfunction();
+              } catch (error) {
+                console.error('Error in SSOfunction:', error);
+                redirectToTripVision();
+              }
+            }
+
+            function SSOfunction() {
+              /*
+                getSession() is not in the geotab API documentation, but the source code is available 
+                on GitHub. It is used to get the current session information for the logged-in user 
+                and only works on the Geotab platform. It calls Authenicate(), so we dont need to worry 
+                about doing that. 
+              */
+
+              api.getSession(function (session, server) {
+                console.log('session:', JSON.stringify(session));
+                console.log('server', server);
+
+                const userName = session.userName;
+                api.call(
+                  'Get',
+                  {
+                    typeName: 'User',
+                    resultsLimit: 1,
+                    propertySelector: { fields: ['id', 'companyGroups'] },
+                    search: { name: userName },
+                  },
+                  function (apiresult) {
+                    console.log(apiresult);
+
+                    const userId = apiresult[0].id;
+                    const companyGroups = apiresult[0].companyGroups
+                      .map((group) => group.id)
+                      .join(', ');
+
+                    let outputStr = `<h1>Result:</h1>
+                        <div class="output-container">
+                          <pre><code>Session: ${JSON.stringify(session, null, 2)}</code></pre>
+                          <pre><code>Server: ${server}</code></pre>
+                          <pre><code>Logged in User/Business ID: ${userId}</code></pre>
+                          <pre><code>Business IDs this user should be able to access: ${companyGroups}</code></pre>
+                        </div>`;
+                    console.log(apiresult);
+
+                    document.querySelector('#outputp').innerHTML = outputStr;
+
+                    // Call API with the userID and companyGroups
+                    fetch('https://tvapi2dev.noregon.com/geotablogin', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({
+                        userID: userId,
+                        companyGroups: companyGroups.split(', '),
+                      }),
+                    })
+                      .then((response) => {
+                        if (!response.ok) {
+                          throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                      })
+                      .then((data) => {
+                        console.log('Success:', data);
+                        const loginToken = data.loginToken;
+
+                        // Use the token to authenticate the user
+                        loginUser(loginToken);
+                      })
+                      .catch((error) => {
+                        console.log('Error retrieving token from TripVision Auth:');
+                        console.log('Error:', error);
+                        redirectToTripVision('auth');
+                      });
+                  },
+                );
+              });
+            }
+
+            
+            // we may need some logic to redirect to dev/qa/prod based on the environment
+            // but not really sure how to do that when we serve a singular html file 
+            // perhaps we could use the database to determine the environment and set a variable here
+            const tv_url = 'https://tripvision.noregon.com';
+
+            function redirectToTripVision(route) {
+              const mainElement = document.getElementById('checkmateContent');
+              var src = `${tv_url}/${route}`;
+              console.log("redirecting to TripVision:", src);
+              // for debugging dont redirect
+              
+
+              // if (mainElement) {
+              //   mainElement.innerHTML = `<iframe src="${src}" style="width: 100%; height: 100%; border: none;"></iframe>`;
+              // } else {
+              //   window.location.href = src;
+              // }
+            }
+
+            function loginUser(token) {
+              // Use the token to authenticate the user
+              // This might involve setting the token in the headers of future requests
+              // and updating the application state to reflect the authenticated user
+              localStorage.setItem('auth_token', token);
+              console.log('User authenticated with token:', token);
+
+              redirectToTripVision('vehicles'); // Redirect to the vehicles page after successful login
+            }
+
+            callback();
+          },
+          focus(api, state) {
+            console.log('User has clicked the add-in and is focused on the UI');
+          },
+          blur(api, state) {
+            console.log('User has navigated away from the add-in');
+          },
+        };
+      };
+    </script>
+  </head>
+
+  <body>
+    <div id="n-preClick">
+      <center>
+        <h1>This is a test add-in to demonstrate Single Sign-On</h1>
+        <button id="n-myBtn">SSO</button>
+      </center>
+      <div id="outputp" class="output-container"></div>
+    </div>
+  </body>
+</html>
