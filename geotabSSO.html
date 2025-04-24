@@ -1,28 +1,6 @@
 <html>
   <head>
     <title>TripVision Single Sign-On</title>
-    <style>
-      html, body {
-        height: 100%;
-        margin: 0;
-        padding: 0;
-      }
-      iframe {
-        width: 100%;
-        height: 100%;
-        border: none;
-      }
-      .output-container {
-        text-align: left;
-        white-space: pre-wrap;
-        word-wrap: break-word;
-        background-color: #f5f5f5;
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        font-size: 16px; /* Adjusted text size */
-      }
-    </style>
     <script>
       geotab.addin.myCustomPage1 = () => {
         return {
@@ -129,53 +107,6 @@
                 modifyVisuals();
               };
             }
-
-            function modifyVisuals() {
-              try {
-                const iframe = document.getElementById('login-iframe');
-                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-
-                // Remove the login form
-                const loginForm = iframeDoc.getElementById('loginForm');
-                if (loginForm) {
-                  loginForm.remove();
-                }
-
-                // Add logos and "We're logging you in!" text
-                const body = iframeDoc.body;
-                const logoContainer = document.createElement('div');
-                logoContainer.style.textAlign = 'center';
-                logoContainer.style.marginTop = '50px';
-
-                const tvLogo = document.createElement('img');
-                tvLogo.src = '../../../../../assets/images/tripvision-logo.png';
-                tvLogo.alt = 'TripVision Logo';
-                tvLogo.style.width = '200px';
-                tvLogo.style.marginBottom = '20px';
-
-                const rdLogo = document.createElement('img');
-                rdLogo.src = '../../../../../assets/images/remote-logistics.png';
-                rdLogo.alt = 'Remote Logistics Logo';
-                rdLogo.style.width = '200px';
-                rdLogo.style.marginBottom = '20px';
-
-                const loadingText = document.createElement('p');
-                loadingText.textContent = "We're logging you in!";
-                loadingText.style.fontSize = '18px';
-                loadingText.style.fontWeight = 'bold';
-
-                logoContainer.appendChild(tvLogo);
-                logoContainer.appendChild(rdLogo);
-                logoContainer.appendChild(loadingText);
-
-                body.appendChild(logoContainer);
-
-                console.log('Login form replaced with logos and loading text.');
-              } catch (error) {
-                console.error('Error modifying iframe content:', error);
-              }
-            }
-
             callback();
           },
           focus(api, state) {
@@ -190,6 +121,6 @@
   </head>
 
   <body>
-    <iframe id="login-iframe" width=100% height=100% src="https://tripvision.noregon.com/auth"></iframe>
+    <iframe id="login-iframe" src="https://tripvision.noregon.com/auth/sso"></iframe>
   </body>
 </html>
