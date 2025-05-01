@@ -1,3 +1,6 @@
+<!-- This file is hosted on the addin page of geotab -->
+
+
 <html>
   <head>
     <title>TripVision Single Sign-On</title>
@@ -7,7 +10,7 @@
           initialize(api, state, callback) {
             console.log('Add-in initialized');
 
-            // Automatically call SSOWrapper and modifyVisuals when the page is loaded
+            // Automatically calls SSOWrapper when the page is loaded
             SSOWrapper();
             setupIframeLoadListener();
 
@@ -46,16 +49,16 @@
                     console.log('Company Groups:', companyGroups);
 
                     // Call API with the userID and companyGroups
-                    fetch('https://tvapi2dev.noregon.com/log-in-geotab', {
+                    fetch('https://tvapi2qa.noregon.com/log-in-geotab', {
                       method: 'POST',
                       headers: {
                         'Content-Type': 'application/json',
                       },
                       body: JSON.stringify({
-                        userID: userId,
-                        databaseName: session.database,
-                        serverName: server,
+                        Username: userId,
+                        DatabaseName: session.database,
                         SessionID: session.sessionId,
+                        ServerName: server,
                       }),
                     })
                       .then((response) => {
@@ -81,7 +84,7 @@
             }
 
             function redirectToTripVision(route) {
-              const tv_url = 'https://tripvision.noregon.com';
+              const tv_url = 'https://tripvisionqa.noregon.com';
               const iframe = document.getElementById('login-iframe');
               const src = `${tv_url}/${route}`;
               
@@ -121,6 +124,6 @@
   </head>
 
   <body>
-    <iframe id="login-iframe" src="https://tripvision.noregon.com/auth/sso"></iframe>
+    <iframe id="login-iframe" src="https://tripvisionqa.noregon.com/auth/sso"></iframe>
   </body>
 </html>
