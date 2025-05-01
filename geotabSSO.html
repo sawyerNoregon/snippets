@@ -15,18 +15,16 @@
 
             function SSOWrapper() {
               try {
+                logUserDetails();
                 SSOfunction();
               } catch (error) {
-                console.error('Error in SSOfunction:', error);
-                redirectToTripVision();
+                console.error('Error in SSOWrapper:', error);
+                // redirectToTripVision('auth');
               }
             }
 
-            function SSOfunction() {
-              api.getSession(function (session, server) {
-                console.log('session:', JSON.stringify(session));
-                console.log('server', server);
-
+            function logUserDetails() {
+              api.getSession(function (session) {
                 const userName = session.userName;
                 api.call(
                   'Get',
@@ -37,8 +35,6 @@
                     search: { name: userName },
                   },
                   function (apiresult) {
-                    console.log(apiresult);
-
                     const userId = apiresult[0].id;
                     const companyGroups = apiresult[0].companyGroups
                       .map((group) => group.id)
@@ -46,40 +42,43 @@
 
                     console.log('User ID:', userId);
                     console.log('Company Groups:', companyGroups);
-
-                    // Call API with the userID and companyGroups
-                    fetch('https://tvapi2qa.noregon.com/api/v2/i/users/log-in-geotab', {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json',
-                      },
-                      body: JSON.stringify({
-                        Username: userId,
-                        DatabaseName: session.database,
-                        SessionID: session.sessionId,
-                        ServerName: server,
-                      }),
-                    })
-                      .then((response) => {
-                        if (!response.ok) {
-                          throw new Error(`HTTP error! status: ${response.status}`);
-                        }
-                        return response.json();
-                      })
-                      .then((data) => {
-                        console.log('Success:', data);
-                        const loginToken = data.loginToken;
-
-                        // Use the token to authenticate the user
-                        loginUser(loginToken);
-                      })
-                      .catch(async (error) => {
-                        const errorBody = await response.text();
-                        console.error('Error retrieving token:', error, errorBody);
-                        redirectToTripVision('auth');
-                      });
                   }
                 );
+              });
+            }
+
+            function SSOfunction() {
+              api.getSession(function (session, server) {
+                fetch('https://tvapi2qa.noregon.com/api/v2/i/users/log-in-geotab', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    Username: session.userName,
+                    DatabaseName: session.database,
+                    SessionID: session.sessionId,
+                    ServerName: server,
+                  }),
+                })
+                  .then((response) => {
+                    if (!response.ok) {
+                      throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                  })
+                  .then((data) => {
+                    console.log('Success:', data);
+                    const loginToken = data.loginToken;
+
+                    // Use the token to authenticate the user
+                    loginUser(loginToken);
+                  })
+                  .catch(async (error) => {
+                    const errorBody = await response.text();
+                    console.error('Error retrieving token:', error, errorBody);
+                    redirectToTripVision('auth');
+                  });
               });
             }
 
@@ -117,6 +116,6 @@
   </head>
 
   <body>
-    <iframe id="login-iframe" src="https://tripvisionqa.noregon.com/auth/sso"></iframe>
+    <iframe width=100% height=100% id="login-iframe" src="https://tripvisionqa.noregon.com/auth/sso"></iframe>
   </body>
 </html>
