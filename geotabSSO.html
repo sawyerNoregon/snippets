@@ -12,7 +12,6 @@
 
             // Automatically calls SSOWrapper when the page is loaded
             SSOWrapper();
-            setupIframeLoadListener();
 
             function SSOWrapper() {
               try {
@@ -49,7 +48,7 @@
                     console.log('Company Groups:', companyGroups);
 
                     // Call API with the userID and companyGroups
-                    fetch('https://tvapi2qa.noregon.com/log-in-geotab', {
+                    fetch('https://tvapi2qa.noregon.com/api/v2/i/users/log-in-geotab', {
                       method: 'POST',
                       headers: {
                         'Content-Type': 'application/json',
@@ -74,8 +73,9 @@
                         // Use the token to authenticate the user
                         loginUser(loginToken);
                       })
-                      .catch((error) => {
-                        console.error('Error retrieving token from TripVision Auth:', error);
+                      .catch(async (error) => {
+                        const errorBody = await response.text();
+                        console.error('Error retrieving token:', error, errorBody);
                         redirectToTripVision('auth');
                       });
                   }
@@ -102,13 +102,6 @@
               console.log('User authenticated with token:', token);
 
               redirectToTripVision('vehicles'); // Redirect to the vehicles page after successful login
-            }
-
-            function setupIframeLoadListener() {
-              const iframe = document.getElementById('login-iframe');
-              iframe.onload = () => {
-                modifyVisuals();
-              };
             }
             callback();
           },
