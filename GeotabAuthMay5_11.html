@@ -103,19 +103,19 @@
               }
 
               function redirectToTripVision(route) {
-                const iframe = document.getElementById('login-iframe');
-                const src = `${TRIPVISION_BASE_URL}${route}`;
+                // const iframe = document.getElementById('login-iframe');
+                // const src = `${TRIPVISION_BASE_URL}${route}`;
 
-                if (iframe) {
-                  iframe.src = src; // Update the iframe's src attribute to redirect
-                  console.log('Redirecting iframe to:', src);
-                } else {
-                  console.error('Iframe not found. Unable to redirect.');
-                }
+                // if (iframe) {
+                //   iframe.src = src; // Update the iframe's src attribute to redirect
+                //   console.log('Redirecting iframe to:', src);
+                // } else {
+                //   console.error('Iframe not found. Unable to redirect.');
+                // }
+                return;
               }
 
-              function loginUser(token, userInfo, userPreferences, data) {
-                // Construct the user object to match what LocalStorageService expects
+              function loginUser(token, userInfo, userPreferences, userdata) {
                 const currentUser = {
                   Token: token,
                   LogInUserInfo: userInfo,
@@ -124,24 +124,32 @@
                 };
 
                 const iframe = document.getElementById('login-iframe');
-                const iframeWindow = iframe.contentWindow;
 
-                if (iframeWindow && iframeWindow.localStorage) {
-                  // Store the token and user object in the iframe's localStorage
-                  iframeWindow.localStorage.setItem('auth_token_V2', token);
-                  iframeWindow.localStorage.setItem('isSSO', 'true');
-                  iframeWindow.localStorage.setItem(
-                    'loggedInBusinessId',
-                    data.LogInUserInfo.BusinessId,
+                if (iframe && iframe.contentWindow) {
+                  // Send data to the iframe using postMessage
+                  iframe.contentWindow.postMessage(
+                    {
+                      type: 'SET_LOCAL_STORAGE',
+                      data: {
+                        auth_token_V2: token,
+                        current_user: userdata,
+                        loggedInBusinessId: data.LogInUserInfo.BusinessId,
+                        isSSO: 'true',
+                      },
+                    },
+                    '*',
                   );
-                  iframeWindow.localStorage.setItem('current_user', JSON.stringify(currentUser));
 
-                  console.log('User authenticated with token:', token);
-                  console.log('User info stored in iframe localStorage:', userInfo);
-                  console.log('User preferences stored in iframe localStorage:', userPreferences);
+                  console.log('Sent data to iframe via postMessage:', {
+                    auth_token_V2: token,
+                    current_user: currentUser,
+                    loggedInBusinessId: data.LogInUserInfo.BusinessId,
+                    isSSO: 'true',
+                  });
                 } else {
-                  console.error('Unable to access iframe localStorage.');
+                  console.error('Iframe not found or inaccessible.');
                 }
+
                 // Redirect based on user preferences
                 if (userPreferences && userPreferences.ShowDashboardAsLanding) {
                   redirectToTripVision('dashboard');
@@ -164,6 +172,6 @@
   </head>
 
   <body>
-    <iframe width="100%" height="100%" id="login-iframe"></iframe>
+    <iframe width="100%" height="100%" id="login-iframe">https://tripvisionqa.noregon.com/auth/sso</iframe>
   </body>
 </html>
