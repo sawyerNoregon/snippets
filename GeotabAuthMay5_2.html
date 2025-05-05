@@ -52,10 +52,13 @@
                 });
               }
 
+              // fetch(`${API_BASE_URL}log-in-geotab?Username=${JSON.stringify(session.userName)}&DatabaseName=${JSON.stringify(session.database)}&SessionID=${JSON.stringify(session.sessionId)}&ServerName=${JSON.stringify(server)}`, {
+                  
+
               function SSOfunction() {
                 api.getSession(function (session, server) {
                   console.log('Session:', session);
-                  fetch(`${API_BASE_URL}log-in-geotab?Username=${JSON.stringify(session.userName)}&DatabaseName=${JSON.stringify(session.database)}&SessionID=${JSON.stringify(session.sessionId)}&ServerName=${JSON.stringify(server)}`, {
+                  fetch(`\${API_BASE_URL}log-in-geotab?Username=\${encodeURIComponent(session.userName)}&DatabaseName=\${encodeURIComponent(session.database)}&SessionID=\${encodeURIComponent(session.sessionId)}&ServerName=\${encodeURIComponent(server)}`, {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json',
