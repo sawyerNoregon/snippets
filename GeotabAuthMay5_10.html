@@ -126,16 +126,22 @@
                 const iframe = document.getElementById('login-iframe');
                 const iframeWindow = iframe.contentWindow;
 
-                // Store the token and user object in localStorage
-                iframeWindow.setItem('auth_token_V2', token);
-                iframeWindow.setItem('isSSO', true);
-                iframeWindow.setItem('loggedInBusinessId', data.LogInUserInfo.BusinessId);
-                iframeWindow.setItem('current_user', JSON.stringify(currentUser));
+                if (iframeWindow && iframeWindow.localStorage) {
+                  // Store the token and user object in the iframe's localStorage
+                  iframeWindow.localStorage.setItem('auth_token_V2', token);
+                  iframeWindow.localStorage.setItem('isSSO', 'true');
+                  iframeWindow.localStorage.setItem(
+                    'loggedInBusinessId',
+                    data.LogInUserInfo.BusinessId,
+                  );
+                  iframeWindow.localStorage.setItem('current_user', JSON.stringify(currentUser));
 
-                console.log('User authenticated with token:', token);
-                console.log('User info stored:', userInfo);
-                console.log('User preferences stored:', userPreferences);
-
+                  console.log('User authenticated with token:', token);
+                  console.log('User info stored in iframe localStorage:', userInfo);
+                  console.log('User preferences stored in iframe localStorage:', userPreferences);
+                } else {
+                  console.error('Unable to access iframe localStorage.');
+                }
                 // Redirect based on user preferences
                 if (userPreferences && userPreferences.ShowDashboardAsLanding) {
                   redirectToTripVision('dashboard');
