@@ -126,9 +126,11 @@
                 const iframe = document.getElementById('login-iframe');
 
                 if (iframe) {
-                  // Wait for the iframe to load before sending the message
-                  iframe.onload = () => {
-                    if (iframe.contentWindow) {
+                  // Listen for the "READY" message from the iframe
+                  window.addEventListener('message', function handleReadyMessage(event) {
+                    if (event.data && event.data.type === 'READY') {
+                      console.log('Iframe is ready to receive messages.');
+
                       // Send data to the iframe using postMessage
                       iframe.contentWindow.postMessage(
                         {
@@ -143,18 +145,19 @@
                         '*', // Replace '*' with the iframe's origin for security
                       );
 
-                      console.log('Sent data to iframe via postMessage after iframe loaded:', {
+                      console.log('Sent data to iframe via postMessage:', {
                         auth_token_V2: token,
                         current_user: currentUser,
                         loggedInBusinessId: userdata.LogInUserInfo.BusinessId,
                         isSSO: 'true',
                       });
-                    } else {
-                      console.error('Iframe contentWindow is not accessible.');
-                    }
-                  };
 
-                  console.log('Waiting for iframe to load...');
+                      // Remove the event listener after the message is sent
+                      window.removeEventListener('message', handleReadyMessage);
+                    }
+                  });
+
+                  console.log('Waiting for iframe to signal readiness...');
                 } else {
                   console.error('Iframe not found.');
                 }
