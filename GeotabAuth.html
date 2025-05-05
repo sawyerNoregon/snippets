@@ -52,6 +52,7 @@
               function logUserDetails() {
                 api.getSession(function (session) {
                   const userName = session.userName;
+                  console.log(session.sessionId);
                   api.call(
                     'Get',
                     {
