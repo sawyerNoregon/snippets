@@ -93,7 +93,7 @@
 
               function redirectToTripVision(route) {
                 const iframe = document.getElementById('login-iframe');
-                const src = `${TRIPVISION_BASE_URL}/${route}`;
+                const src = `${TRIPVISION_BASE_URL}${route}`;
 
                 if (iframe) {
                   iframe.src = src; // Update the iframe's src attribute to redirect
