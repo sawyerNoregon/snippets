@@ -116,16 +116,23 @@
               }
 
               function loginUser(token, userInfo, userPreferences) {
+                // Construct the user object to match what LocalStorageService expects
+                const currentUser = {
+                  Token: token,
+                  LogInUserInfo: userInfo,
+                  UserPreferences: userPreferences,
+                  ReturnCode: 0, // Ensure ReturnCode is 0 for successful authentication
+                };
+
+                // Store the token and user object in localStorage
                 localStorage.setItem('auth_token_V2', token);
-                localStorage.setItem('isSSO', true);
-                localStorage.setItem('user_info', JSON.stringify(userInfo));
-                localStorage.setItem('user_preferences', JSON.stringify(userPreferences));
+                localStorage.setItem('current_user', JSON.stringify(currentUser));
 
                 console.log('User authenticated with token:', token);
                 console.log('User info stored:', userInfo);
                 console.log('User preferences stored:', userPreferences);
 
-                // Redirect based on preferences
+                // Redirect based on user preferences
                 if (userPreferences && userPreferences.ShowDashboardAsLanding) {
                   redirectToTripVision('dashboard');
                 } else {
