@@ -89,15 +89,14 @@
                         redirectToTripVision('auth');
                         return;
                       }
-                      
+
                       const loginToken = data.Token;
                       const userInfo = data.LogInUserInfo;
                       const userPreferences = data.UserPreferences;
-                      loginUser(loginToken, data.userInfo, data.userPreferences);
+                      loginUser(loginToken, data.userInfo, data.userPreferences, data);
                     })
-                    .catch(async (error) => {
-                      const errorBody = await response.text();
-                      console.error('Error retrieving token:', error, errorBody);
+                    .catch((error) => {
+                      console.error('Error retrieving token:', error);
                       redirectToTripVision('auth');
                     });
                 });
@@ -115,7 +114,7 @@
                 }
               }
 
-              function loginUser(token, userInfo, userPreferences) {
+              function loginUser(token, userInfo, userPreferences, data) {
                 // Construct the user object to match what LocalStorageService expects
                 const currentUser = {
                   Token: token,
@@ -129,6 +128,8 @@
 
                 // Store the token and user object in localStorage
                 iframeWindow.setItem('auth_token_V2', token);
+                iframeWindow.setItem('isSSO', true);
+                iframeWindow.setItem('loggedInBusinessId', data.LogInUserInfo.BusinessId);
                 iframeWindow.setItem('current_user', JSON.stringify(currentUser));
 
                 console.log('User authenticated with token:', token);
