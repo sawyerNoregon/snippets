@@ -124,9 +124,12 @@
                   ReturnCode: 0, // Ensure ReturnCode is 0 for successful authentication
                 };
 
+                const iframe = document.getElementById('login-iframe');
+                const iframeWindow = iframe.contentWindow;
+
                 // Store the token and user object in localStorage
-                localStorage.setItem('auth_token_V2', token);
-                localStorage.setItem('current_user', JSON.stringify(currentUser));
+                iframeWindow.setItem('auth_token_V2', token);
+                iframeWindow.setItem('current_user', JSON.stringify(currentUser));
 
                 console.log('User authenticated with token:', token);
                 console.log('User info stored:', userInfo);
