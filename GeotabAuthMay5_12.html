@@ -103,15 +103,15 @@
               }
 
               function redirectToTripVision(route) {
-                // const iframe = document.getElementById('login-iframe');
-                // const src = `${TRIPVISION_BASE_URL}${route}`;
+                const iframe = document.getElementById('login-iframe');
+                const src = `${TRIPVISION_BASE_URL}${route}`;
 
-                // if (iframe) {
-                //   iframe.src = src; // Update the iframe's src attribute to redirect
-                //   console.log('Redirecting iframe to:', src);
-                // } else {
-                //   console.error('Iframe not found. Unable to redirect.');
-                // }
+                if (iframe) {
+                  iframe.src = src; // Update the iframe's src attribute to redirect
+                  console.log('Redirecting iframe to:', src);
+                } else {
+                  console.error('Iframe not found. Unable to redirect.');
+                }
                 return;
               }
 
@@ -133,7 +133,7 @@
                       data: {
                         auth_token_V2: token,
                         current_user: userdata,
-                        loggedInBusinessId: data.LogInUserInfo.BusinessId,
+                        loggedInBusinessId: userdata.LogInUserInfo.BusinessId,
                         isSSO: 'true',
                       },
                     },
@@ -150,12 +150,6 @@
                   console.error('Iframe not found or inaccessible.');
                 }
 
-                // Redirect based on user preferences
-                if (userPreferences && userPreferences.ShowDashboardAsLanding) {
-                  redirectToTripVision('dashboard');
-                } else {
-                  redirectToTripVision('vehicles');
-                }
               }
               callback();
             },
@@ -172,6 +166,6 @@
   </head>
 
   <body>
-    <iframe width="100%" height="100%" id="login-iframe">https://tripvisionqa.noregon.com/auth/sso</iframe>
+    <iframe width="100%" height="100%" id="login-iframe" src="https://tripvisionqa.noregon.com/auth/sso"></iframe>
   </body>
 </html>
