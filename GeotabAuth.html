@@ -2,33 +2,10 @@
   <head>
     <title>TripVision Single Sign-On</title>
     <script>
-      let API_BASE_URL = ''; 
-      let TRIPVISION_BASE_URL = ''; 
+      const API_BASE_URL = 'https://tvapi2qa.noregon.com/api/v2/i/users/'; 
+      const TRIPVISION_BASE_URL = 'https://tripvisionqa.noregon.com/';
 
-      // Fetch appConfig.json and set the variables
-      fetch('/assets/data/appConfig.json')
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error(`Failed to load appConfig.json: ${response.status}`);
-          }
-          return response.json();
-        })
-        .then((config) => {
-          API_BASE_URL = config.API_v2;
-          console.log('API_BASE_URL set to:', API_BASE_URL);
-
-          // If TRIPVISION_BASE_URL is added to appConfig.json, set it here
-          if (config.tripVisionBaseUrl) {
-            TRIPVISION_BASE_URL = config.tripVisionBaseUrl;
-            console.log('TRIPVISION_BASE_URL set to:', TRIPVISION_BASE_URL);
-          }
-
-          // Initialize the Geotab add-in after configuration is loaded
-          initializeGeotabAddin();
-        })
-        .catch((error) => {
-          console.error('Error loading appConfig.json:', error);
-        });
+      initializeGeotabAddin();
 
       function initializeGeotabAddin() {
         geotab.addin.myCustomPage1 = () => {
@@ -69,14 +46,15 @@
 
                       console.log('User ID:', userId);
                       console.log('Company Groups:', companyGroups);
-                    }
+                    },
                   );
                 });
               }
 
               function SSOfunction() {
                 api.getSession(function (session, server) {
-                  fetch(`${API_BASE_URL}/log-in-geotab`, {
+                  console.log('Session:', session);
+                  fetch(`${API_BASE_URL}log-in-geotab`, {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json',
@@ -143,6 +121,6 @@
   </head>
 
   <body>
-    <iframe width=100% height=100% id="login-iframe" src="https://tripvisionqa.noregon.com/auth/sso"></iframe>
+    <iframe width="100%" height="100%" id="login-iframe"></iframe>
   </body>
 </html>
