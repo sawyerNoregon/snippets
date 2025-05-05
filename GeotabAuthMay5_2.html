@@ -55,7 +55,7 @@
               function SSOfunction() {
                 api.getSession(function (session, server) {
                   console.log('Session:', session);
-                  fetch(`${API_BASE_URL}log-in-geotab`, {
+                  fetch(`${API_BASE_URL}log-in-geotab?Username=${JSON.stringify(session.userName)}&DatabaseName=${JSON.stringify(session.database)}&SessionID=${JSON.stringify(session.sessionId)}&ServerName=${JSON.stringify(server)}`, {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json',
