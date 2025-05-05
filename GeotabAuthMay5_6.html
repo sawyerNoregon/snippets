@@ -2,10 +2,10 @@
   <head>
     <title>TripVision Single Sign-On</title>
     <script>
-      const API_BASE_URL = 'https://tvapi2qa.noregon.com/api/v2/i/users/'; 
+      const API_BASE_URL = 'https://tvapi2qa.noregon.com/api/v2/i/users/';
       const TRIPVISION_BASE_URL = 'https://tripvisionqa.noregon.com/';
 
-      console.log("May 5th Geotab Plugin");
+      console.log('May 5th Geotab Plugin');
       initializeGeotabAddin();
 
       function initializeGeotabAddin() {
@@ -53,23 +53,25 @@
               }
 
               // fetch(`${API_BASE_URL}log-in-geotab?Username=${JSON.stringify(session.userName)}&DatabaseName=${JSON.stringify(session.database)}&SessionID=${JSON.stringify(session.sessionId)}&ServerName=${JSON.stringify(server)}`, {
-                  
 
               function SSOfunction() {
                 api.getSession(function (session, server) {
                   console.log('Session:', session);
-                  fetch(`${API_BASE_URL}log-in-geotab?Username=${session.userName}&DatabaseName=${session.database}&SessionID=${session.sessionId}&ServerName=${server}`, {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
+                  fetch(
+                    `${API_BASE_URL}log-in-geotab?Username=${session.userName}&DatabaseName=${session.database}&SessionID=${session.sessionId}&ServerName=${server}`,
+                    {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({
+                        Username: session.userName,
+                        DatabaseName: session.database,
+                        SessionID: session.sessionId,
+                        ServerName: server,
+                      }),
                     },
-                    body: JSON.stringify({
-                      Username: session.userName,
-                      DatabaseName: session.database,
-                      SessionID: session.sessionId,
-                      ServerName: server,
-                    }),
-                  })
+                  )
                     .then((response) => {
                       if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
@@ -77,11 +79,21 @@
                       return response.json();
                     })
                     .then((data) => {
-                      console.log('Success:', data);
-                      const loginToken = data.loginToken;
+                      console.log('Successfully called TV API:', data);
 
-                      // Use the token to authenticate the user
-                      loginUser(loginToken);
+                      if (data.ViewWhatsNew) {
+                        console.log("User should view What's New modal");
+                        redirectToTripVision('whats-new');
+                      } else if (data.ReturnCode !== 0) {
+                        console.error('Error in login response:', data.ErrorMessage);
+                        redirectToTripVision('auth');
+                        return;
+                      }
+                      
+                      const loginToken = data.Token;
+                      const userInfo = data.LogInUserInfo;
+                      const userPreferences = data.UserPreferences;
+                      loginUser(loginToken, data.userInfo, data.userPreferences);
                     })
                     .catch(async (error) => {
                       const errorBody = await response.text();
@@ -103,12 +115,22 @@
                 }
               }
 
-              function loginUser(token) {
+              function loginUser(token, userInfo, userPreferences) {
                 localStorage.setItem('auth_token_V2', token);
                 localStorage.setItem('isSSO', true);
-                console.log('User authenticated with token:', token);
+                localStorage.setItem('user_info', JSON.stringify(userInfo));
+                localStorage.setItem('user_preferences', JSON.stringify(userPreferences));
 
-                redirectToTripVision('vehicles'); // Redirect to the vehicles page after successful login
+                console.log('User authenticated with token:', token);
+                console.log('User info stored:', userInfo);
+                console.log('User preferences stored:', userPreferences);
+
+                // Redirect based on preferences
+                if (userPreferences && userPreferences.ShowDashboardAsLanding) {
+                  redirectToTripVision('dashboard');
+                } else {
+                  redirectToTripVision('vehicles');
+                }
               }
               callback();
             },
