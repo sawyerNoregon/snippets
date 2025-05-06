@@ -30,7 +30,7 @@
               function logUserDetails() {
                 api.getSession(function (session) {
                   const userName = session.userName;
-                  console.log(JSON.stringify(session.sessionId));
+                  console.log("session:" + JSON.stringify(session));
                   api.call(
                     'Get',
                     {
