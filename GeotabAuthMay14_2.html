@@ -5,7 +5,7 @@
       const API_BASE_URL = 'https://tvapi2qa.noregon.com/api/v2/i/users/';
       const TRIPVISION_BASE_URL = 'https://tripvisionqa.noregon.com/';
 
-      console.log('May 5th Geotab Plugin');
+      console.log('Geotab SSO Plugin');
       initializeGeotabAddin();
 
       function initializeGeotabAddin() {
@@ -180,14 +180,7 @@
             blur(api, state) {
               console.log('User has navigated away from the add-in');
 
-              // Send data to the iframe using postMessage
-              iframe.contentWindow.postMessage(
-                {
-                  type: 'LOGOUT',
-                  data: {},
-                },
-                '*', // Replace '*' with the iframe's origin for security
-              );
+              localStorage.clear();
             },
           };
         };
