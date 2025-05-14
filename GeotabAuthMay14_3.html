@@ -179,7 +179,7 @@
             },
             blur(api, state) {
               console.log('User has navigated away from the add-in');
-
+              iframe.contentWindow.postMessage({ type: 'LOGOUT' }, '*');
               localStorage.clear();
             },
           };
