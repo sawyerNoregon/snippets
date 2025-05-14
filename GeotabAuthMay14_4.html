@@ -13,14 +13,8 @@
           return {
             initialize(api, state, callback) {
               console.log('Add-in initialized');
-
-              // Set up the event listener immediately, before any async operations
               setupIframeMessageListener();
-
-              // Automatically calls SSOWrapper when the page is loaded
               SSOWrapper();
-
-              // Flag to track if we're waiting for authentication to complete
               let isAuthenticating = false;
               let authData = null;
 
@@ -28,12 +22,9 @@
                 window.addEventListener('message', function handleReadyMessage(event) {
                   if (event.data && event.data.type === 'READY') {
                     console.log('Iframe is ready to receive messages.');
-
-                    // If we already have auth data, send it immediately
                     if (authData) {
                       sendAuthDataToIframe(authData);
                     } else if (!isAuthenticating) {
-                      // If we're not currently authenticating, the iframe loaded before auth started
                       console.log('Iframe ready but still waiting for authentication data');
                     }
                   }
@@ -96,8 +87,6 @@
                   );
                 });
               }
-
-              // fetch(`${API_BASE_URL}log-in-geotab?Username=${JSON.stringify(session.userName)}&DatabaseName=${JSON.stringify(session.database)}&SessionID=${JSON.stringify(session.sessionId)}&ServerName=${JSON.stringify(server)}`, {
 
               function SSOfunction() {
                 api.getSession(function (session, server) {
@@ -179,7 +168,17 @@
             },
             blur(api, state) {
               console.log('User has navigated away from the add-in');
-              iframe.contentWindow.postMessage({ type: 'LOGOUT' }, '*');
+              const iframe = document.getElementById('login-iframe');
+              if (iframe) {
+                try {
+                  console.log('Sending LOGOUT message to iframe');
+                  iframe.contentWindow.postMessage({ type: 'LOGOUT' }, '*');
+                } catch (e) {
+                  console.error('Error sending logout message:', e);
+                }
+              } else {
+                console.error('Iframe not found. Unable to send LOGOUT message.');
+              }
               localStorage.clear();
             },
           };
