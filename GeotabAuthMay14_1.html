@@ -14,8 +14,53 @@
             initialize(api, state, callback) {
               console.log('Add-in initialized');
 
+              // Set up the event listener immediately, before any async operations
+              setupIframeMessageListener();
+
               // Automatically calls SSOWrapper when the page is loaded
               SSOWrapper();
+
+              // Flag to track if we're waiting for authentication to complete
+              let isAuthenticating = false;
+              let authData = null;
+
+              function setupIframeMessageListener() {
+                window.addEventListener('message', function handleReadyMessage(event) {
+                  if (event.data && event.data.type === 'READY') {
+                    console.log('Iframe is ready to receive messages.');
+
+                    // If we already have auth data, send it immediately
+                    if (authData) {
+                      sendAuthDataToIframe(authData);
+                    } else if (!isAuthenticating) {
+                      // If we're not currently authenticating, the iframe loaded before auth started
+                      console.log('Iframe ready but still waiting for authentication data');
+                    }
+                  }
+                });
+              }
+
+              function sendAuthDataToIframe(data) {
+                const iframe = document.getElementById('login-iframe');
+                if (iframe) {
+                  iframe.contentWindow.postMessage(
+                    {
+                      type: 'SET_LOCAL_STORAGE',
+                      data: {
+                        auth_token_V2: data.token,
+                        current_user: JSON.stringify(data.userdata),
+                        loggedInBusinessId: data.userdata.LogInUserInfo.BusinessId,
+                        isSSO: 'true',
+                      },
+                    },
+                    '*',
+                  );
+
+                  console.log('Sent data to iframe via postMessage');
+                }
+              }
+
+              // Rest of your existing code...
 
               function SSOWrapper() {
                 try {
@@ -30,7 +75,7 @@
               function logUserDetails() {
                 api.getSession(function (session) {
                   const userName = session.userName;
-                  console.log("session:" + JSON.stringify(session));
+                  console.log('session:' + JSON.stringify(session));
                   api.call(
                     'Get',
                     {
@@ -116,48 +161,13 @@
               }
 
               function loginUser(token, userInfo, userPreferences, userdata) {
-                const currentUser = {
-                  Token: token,
-                  LogInUserInfo: userInfo,
-                  UserPreferences: userPreferences,
-                  ReturnCode: 0, // Ensure ReturnCode is 0 for successful authentication
-                };
+                // Store auth data in case iframe is already ready
+                authData = { token, userInfo, userPreferences, userdata };
 
                 const iframe = document.getElementById('login-iframe');
-
                 if (iframe) {
-                  // Listen for the "READY" message from the iframe
-                  window.addEventListener('message', function handleReadyMessage(event) {
-                    if (event.data && event.data.type === 'READY') {
-                      console.log('Iframe is ready to receive messages.');
-
-                      // Send data to the iframe using postMessage
-                      iframe.contentWindow.postMessage(
-                        {
-                          type: 'SET_LOCAL_STORAGE',
-                          data: {
-                            auth_token_V2: token,
-                            current_user: JSON.stringify(userdata), 
-                            loggedInBusinessId: userdata.LogInUserInfo.BusinessId,
-                            isSSO: 'true',
-                          },
-                        },
-                        '*', // Replace '*' with the iframe's origin for security
-                      );
-
-                      console.log('Sent data to iframe via postMessage:', {
-                        auth_token_V2: token,
-                        current_user: currentUser,
-                        loggedInBusinessId: userdata.LogInUserInfo.BusinessId,
-                        isSSO: 'true',
-                      });
-
-                      // Remove the event listener after the message is sent
-                      window.removeEventListener('message', handleReadyMessage);
-                    }
-                  });
-
-                  console.log('Waiting for iframe to signal readiness...');
+                  console.log('Authentication complete, attempting to send data to iframe');
+                  sendAuthDataToIframe(authData);
                 } else {
                   console.error('Iframe not found.');
                 }
@@ -169,6 +179,15 @@
             },
             blur(api, state) {
               console.log('User has navigated away from the add-in');
+
+              // Send data to the iframe using postMessage
+              iframe.contentWindow.postMessage(
+                {
+                  type: 'LOGOUT',
+                  data: {},
+                },
+                '*', // Replace '*' with the iframe's origin for security
+              );
             },
           };
         };
@@ -177,6 +196,11 @@
   </head>
 
   <body>
-    <iframe width="100%" height="100%" id="login-iframe" src="https://tripvisionqa.noregon.com/auth/sso"></iframe>
+    <iframe
+      width="100%"
+      height="100%"
+      id="login-iframe"
+      src="https://tripvisionqa.noregon.com/auth/sso"
+    ></iframe>
   </body>
 </html>
