@@ -59,7 +59,6 @@
                   SSOfunction();
                 } catch (error) {
                   console.error('Error in SSOWrapper:', error);
-                  // redirectToTripVision('auth');
                 }
               }
 
@@ -115,12 +114,8 @@
                     .then((data) => {
                       console.log('Successfully called TV API:', data);
 
-                      if (data.ViewWhatsNew) {
-                        console.log("User should view What's New modal");
-                        redirectToTripVision('whats-new');
-                      } else if (data.ReturnCode !== 0) {
+                      if (data.ReturnCode !== 0) {
                         console.error('Error in login response:', data.ErrorMessage);
-                        redirectToTripVision('auth');
                         return;
                       }
 
@@ -131,22 +126,8 @@
                     })
                     .catch((error) => {
                       console.error('Error retrieving token:', error);
-                      redirectToTripVision('auth');
                     });
                 });
-              }
-
-              function redirectToTripVision(route) {
-                const iframe = document.getElementById('login-iframe');
-                const src = `${TRIPVISION_BASE_URL}${route}`;
-
-                if (iframe) {
-                  iframe.src = src; // Update the iframe's src attribute to redirect
-                  console.log('Redirecting iframe to:', src);
-                } else {
-                  console.error('Iframe not found. Unable to redirect.');
-                }
-                return;
               }
 
               function loginUser(token, userInfo, userPreferences, userdata) {
